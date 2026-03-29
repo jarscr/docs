@@ -1,0 +1,143 @@
+---
+title: "Playground"
+description: "Prueba los endpoints del Auth Server de forma interactiva"
+---
+
+Usa este playground para probar los endpoints del Auth Server directamente desde el navegador.
+
+---
+
+## Login
+
+<Card title="POST /login" icon="right-to-bracket">
+  Autenticarse y obtener un JWT.
+</Card>
+
+<ParamField body="base" type="string" required placeholder="mi_empresa">
+  Identificador del cliente
+</ParamField>
+
+<ParamField body="password" type="string" required placeholder="••••••••">
+  Contraseña del cliente
+</ParamField>
+
+```bash Probar con cURL
+curl -X POST https://auth.mipos.co.cr/login \
+  -H "Content-Type: application/json" \
+  -d '{"base":"TU_BASE","password":"TU_PASSWORD"}'
+```
+
+<Tip>
+  **Mintlify Playground integrado:** Si estás viendo esta documentación en Mintlify, usa el panel lateral derecho de las páginas [POST /login](/api-reference/login) y [GET /jwks](/api-reference/jwks) para ejecutar requests directamente. Solo llena los campos y presiona **Send**.
+</Tip>
+
+---
+
+## JWKS
+
+<Card title="GET /.well-known/jwks.json" icon="key">
+  Obtener la clave pública. No requiere autenticación.
+</Card>
+
+```bash Probar con cURL
+curl -s https://auth.mipos.co.cr/.well-known/jwks.json | python3 -m json.tool
+```
+
+---
+
+## Decodificar un JWT
+
+Una vez que tengas un token, puedes inspeccionar su contenido (sin verificar la firma):
+
+<Tabs>
+  <Tab title="Terminal">
+    ```bash
+    # Reemplaza TOKEN con tu JWT
+    echo "TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | python3 -m json.tool
+    ```
+  </Tab>
+
+  <Tab title="JavaScript (navegador)">
+    ```javascript
+    function decodificarJWT(token) {
+      const payload = token.split('.')[1];
+      return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    }
+
+    // Pegar tu token aquí
+    const decoded = decodificarJWT('eyJhbGciOi...');
+    console.table(decoded);
+    ```
+  </Tab>
+
+  <Tab title="PHP">
+    ```php
+    function decodificarJWT(string $token): array {
+        $parts = explode('.', $token);
+        return json_decode(base64_decode(strtr($parts[1], '-_', '+/')), true);
+    }
+
+    print_r(decodificarJWT('eyJhbGciOi...'));
+    ```
+  </Tab>
+
+  <Tab title="Python">
+    ```python
+    import base64, json
+
+    def decodificar_jwt(token: str) -> dict:
+        payload = token.split('.')[1]
+        payload += '=' * (4 - len(payload) % 4)  # padding
+        return json.loads(base64.urlsafe_b64decode(payload))
+
+    print(decodificar_jwt('eyJhbGciOi...'))
+    ```
+  </Tab>
+</Tabs>
+
+### Resultado esperado
+
+```json
+{
+  "iss": "https://auth.mipos.co.cr",
+  "aud": "https://auth.mipos.co.cr",
+  "iat": 1700000000,
+  "exp": 1700028800,
+  "jti": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+  "sub": "mi_empresa",
+  "base": "mi_empresa"
+}
+```
+
+| Campo | Qué contiene |
+|-------|-------------|
+| `iss` | URL del Auth Server que emitió el token |
+| `aud` | Audiencia del token |
+| `iat` | Cuándo se emitió (Unix timestamp) |
+| `exp` | Cuándo expira (Unix timestamp) |
+| `jti` | ID único del token — útil para revocación |
+| `sub` | Identificador del cliente |
+| `base` | Nombre del cliente en la BD (mismo que `sub`) |
+
+---
+
+## Flujo completo de prueba
+
+<Steps>
+  <Step title="Obtener token">
+    Ir a [POST /login](/api-reference/login) → llenar `base` y `password` → **Send**
+  </Step>
+  <Step title="Copiar el token">
+    De la respuesta, copiar el valor del campo `token`.
+  </Step>
+  <Step title="Decodificar">
+    Usar cualquiera de los métodos anteriores para ver el payload del JWT.
+  </Step>
+  <Step title="Usar en tu API">
+    Enviar el token como `Authorization: Bearer <token>` en requests a tus APIs.
+  </Step>
+</Steps>
+
+<Warning>
+  **No decodifiques tokens en herramientas online de terceros en producción.** Aunque el payload no es secreto, evita exponer tokens activos en sitios como jwt.io. Usa los métodos locales de arriba.
+</Warning>

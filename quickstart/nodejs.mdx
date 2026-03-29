@@ -1,0 +1,79 @@
+---
+title: "Node.js"
+description: "Integrar el Auth Server en tu aplicación Node.js en 5 minutos"
+icon: "node-js"
+---
+
+## 1. Instalar dependencia
+
+```bash
+npm install jsonwebtoken
+```
+
+## 2. Obtener token
+
+```javascript
+async function obtenerToken(base, password) {
+  const response = await fetch('https://auth.mipos.co.cr/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ base, password }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Error de autenticación');
+  }
+
+  const { token, expires_in } = await response.json();
+  return { token, expires_in };
+}
+
+// Uso
+const { token } = await obtenerToken('mi_empresa', 'mi_password');
+```
+
+## 3. Middleware de verificación (Express)
+
+```javascript
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
+
+const publicKey = fs.readFileSync('/ruta/segura/public.pem', 'utf8');
+
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  try {
+    req.cliente = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
+    next();
+  } catch (err) {
+    res.status(401).json({ error: 'Token inválido o expirado' });
+  }
+}
+
+// Uso en Express
+app.get('/ventas', authMiddleware, (req, res) => {
+  const base = req.cliente.base; // Identificador del cliente
+  // ... lógica del endpoint
+});
+```
+
+## 4. Usar el token en requests
+
+```javascript
+const { token } = await obtenerToken('mi_empresa', 'mi_password');
+
+const ventas = await fetch('https://api.mipos.co.cr/ventas', {
+  headers: { 'Authorization': `Bearer ${token}` },
+}).then(r => r.json());
+```
+
+<Check>
+  **Listo.** Tu aplicación Node.js puede autenticarse y verificar tokens del ecosistema MiPOS.
+</Check>

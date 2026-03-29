@@ -1,0 +1,88 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "MiPOS Auth API",
+  "logo": {
+    "dark": "/images/logo-dark.svg",
+    "light": "/images/logo-light.svg"
+  },
+  "favicon": "/images/favicon.svg",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373",
+    "anchors": {
+      "from": "#0D9373",
+      "to": "#07C983"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "Estado del servicio",
+      "url": "https://auth.mipos.co.cr/health"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Dashboard",
+    "url": "https://mipos.co.cr"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    },
+    {
+      "name": "Playground",
+      "url": "playground"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Estado",
+      "icon": "signal",
+      "url": "https://auth.mipos.co.cr/health"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Inicio",
+      "pages": [
+        "introduction",
+        "authentication"
+      ]
+    },
+    {
+      "group": "Guías rápidas",
+      "pages": [
+        "quickstart/php",
+        "quickstart/nodejs",
+        "quickstart/python"
+      ]
+    },
+    {
+      "group": "Endpoints",
+      "pages": [
+        "api-reference/overview",
+        "api-reference/login",
+        "api-reference/jwks",
+        "api-reference/errors"
+      ]
+    },
+    {
+      "group": "Playground",
+      "pages": [
+        "playground/index"
+      ]
+    }
+  ],
+  "footerSocials": {},
+  "api": {
+    "baseUrl": "https://auth.mipos.co.cr",
+    "auth": {
+      "method": "bearer"
+    },
+    "playground": {
+      "mode": "simple"
+    }
+  },
+  "openapi": "openapi.yaml"
+}

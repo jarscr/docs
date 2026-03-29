@@ -1,0 +1,130 @@
+---
+title: "Autenticación"
+description: "Cómo obtener y usar tokens JWT del Auth Server"
+---
+
+## Obtener un token
+
+Envía tus credenciales al endpoint de login:
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://auth.mipos.co.cr/login \
+  -H "Content-Type: application/json" \
+  -d '{"base":"mi_empresa","password":"mi_password"}'
+```
+
+```php PHP
+$ch = curl_init('https://auth.mipos.co.cr/login');
+curl_setopt_array($ch, [
+    CURLOPT_POST           => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+    CURLOPT_POSTFIELDS     => json_encode([
+        'base'     => 'mi_empresa',
+        'password' => 'mi_password',
+    ]),
+]);
+$result = json_decode(curl_exec($ch), true);
+$token = $result['token'];
+```
+
+```javascript Node.js
+const res = await fetch('https://auth.mipos.co.cr/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ base: 'mi_empresa', password: 'mi_password' }),
+});
+const { token } = await res.json();
+```
+
+```python Python
+import requests
+
+res = requests.post('https://auth.mipos.co.cr/login', json={
+    'base': 'mi_empresa',
+    'password': 'mi_password',
+})
+token = res.json()['token']
+```
+</CodeGroup>
+
+## Usar el token
+
+Incluye el token en el header `Authorization` de cada request a las APIs cliente:
+
+```
+Authorization: Bearer eyJhbGciOiJSUzI1NiIs...
+```
+
+<Warning>
+  El token expira después de **8 horas** (28800 segundos). Cuando expire, debes hacer login nuevamente. No hay endpoint de refresh.
+</Warning>
+
+## Verificar el token (APIs cliente)
+
+Las APIs que reciben el token deben verificar su firma. Hay dos formas:
+
+<Tabs>
+  <Tab title="Con public.pem (local)">
+    Copia el archivo `public.pem` del Auth Server a tu API cliente y verifica localmente:
+
+    <CodeGroup>
+    ```php PHP
+    use Firebase\JWT\JWT;
+    use Firebase\JWT\Key;
+
+    $publicKey = file_get_contents('/ruta/segura/public.pem');
+    $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION'] ?? '');
+
+    try {
+        $decoded = JWT::decode($token, new Key($publicKey, 'RS256'));
+        $base = $decoded->base; // Identificador del cliente
+    } catch (\Exception $e) {
+        http_response_code(401);
+        exit(json_encode(['error' => 'Token inválido']));
+    }
+    ```
+
+    ```javascript Node.js
+    const jwt = require('jsonwebtoken');
+    const fs = require('fs');
+
+    const publicKey = fs.readFileSync('/ruta/segura/public.pem', 'utf8');
+
+    function auth(req, res, next) {
+      const token = (req.headers.authorization || '').replace('Bearer ', '');
+      try {
+        req.cliente = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
+        next();
+      } catch {
+        res.status(401).json({ error: 'Token inválido' });
+      }
+    }
+    ```
+
+    ```python Python
+    import jwt
+
+    public_key = open('/ruta/segura/public.pem').read()
+
+    try:
+        decoded = jwt.decode(token, public_key, algorithms=['RS256'])
+        base = decoded['base']
+    except jwt.InvalidTokenError:
+        # Token inválido o expirado
+        pass
+    ```
+    </CodeGroup>
+  </Tab>
+
+  <Tab title="Con JWKS (remoto)">
+    Consulta el endpoint JWKS para obtener la clave pública dinámicamente. Útil cuando se rotan claves.
+
+    ```
+    GET https://auth.mipos.co.cr/.well-known/jwks.json
+    ```
+
+    La respuesta contiene la clave pública con su `kid`. Las librerías JWT pueden consumir el JWKS directamente para resolver la clave correcta.
+  </Tab>
+</Tabs>

@@ -1,0 +1,122 @@
+---
+title: "Errores"
+description: "Referencia completa de códigos de error del Auth Server"
+---
+
+Todas las respuestas de error siguen la misma estructura:
+
+```json
+{
+  "error": "codigo_de_error",
+  "message": "Descripción legible del error"
+}
+```
+
+## Códigos de error
+
+<AccordionGroup>
+  <Accordion title="400 — bad_request">
+    **Causa:** Falta el campo `base` o `password` en el body del request.
+
+    ```json
+    {
+      "error": "bad_request",
+      "message": "Los campos base y password son requeridos"
+    }
+    ```
+
+    **Solución:** Asegúrate de enviar ambos campos en el body JSON.
+  </Accordion>
+
+  <Accordion title="401 — invalid_credentials">
+    **Causa:** El cliente no existe o la contraseña es incorrecta.
+
+    ```json
+    {
+      "error": "invalid_credentials",
+      "message": "Base o contraseña incorrectos"
+    }
+    ```
+
+    **Nota:** Por seguridad, el mensaje es idéntico en ambos casos para no revelar si un cliente existe.
+  </Accordion>
+
+  <Accordion title="404 — not_found">
+    **Causa:** La ruta solicitada no existe.
+
+    ```json
+    {
+      "error": "not_found",
+      "message": "Endpoint no existe"
+    }
+    ```
+
+    **Solución:** Verifica que la URL sea `/login` o `/.well-known/jwks.json`.
+  </Accordion>
+
+  <Accordion title="405 — method_not_allowed">
+    **Causa:** Se usó un método HTTP incorrecto.
+
+    ```json
+    {
+      "error": "method_not_allowed",
+      "message": "Método no permitido"
+    }
+    ```
+
+    **Solución:**
+    - `/login` solo acepta `POST`
+    - `/.well-known/jwks.json` solo acepta `GET`
+  </Accordion>
+
+  <Accordion title="500 — server_error">
+    **Causa:** Error interno del servidor.
+
+    ```json
+    {
+      "error": "server_error",
+      "message": "Error interno"
+    }
+    ```
+
+    **Nota:** Los detalles del error nunca se exponen en la respuesta por seguridad. Revisar los logs del servidor.
+  </Accordion>
+</AccordionGroup>
+
+## Manejo de errores recomendado
+
+<CodeGroup>
+```php PHP
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$result = json_decode($response, true);
+
+match ($httpCode) {
+    200 => procesarToken($result['token']),
+    400 => throw new \InvalidArgumentException($result['message']),
+    401 => throw new \RuntimeException('Credenciales inválidas'),
+    default => throw new \RuntimeException("Error inesperado: {$httpCode}"),
+};
+```
+
+```javascript Node.js
+const res = await fetch('https://auth.mipos.co.cr/login', { ... });
+const data = await res.json();
+
+if (!res.ok) {
+  switch (res.status) {
+    case 400: throw new Error(`Solicitud inválida: ${data.message}`);
+    case 401: throw new Error('Credenciales inválidas');
+    default:  throw new Error(`Error ${res.status}: ${data.message}`);
+  }
+}
+```
+
+```python Python
+response = requests.post('https://auth.mipos.co.cr/login', json=payload)
+
+if response.status_code != 200:
+    error = response.json()
+    raise Exception(f"{error['error']}: {error['message']}")
+```
+</CodeGroup>

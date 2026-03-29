@@ -1,0 +1,122 @@
+---
+title: "POST /login"
+api: "POST https://auth.mipos.co.cr/login"
+description: "Autenticar un cliente y obtener un JWT"
+---
+
+Valida las credenciales del cliente contra la base de datos y emite un JWT firmado con RS256.
+
+<Note>
+  Por seguridad, el mensaje de error es idéntico tanto si el cliente no existe como si la contraseña es incorrecta.
+</Note>
+
+## Request
+
+<ParamField body="base" type="string" required>
+  Identificador único del cliente en la base de datos.
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Contraseña del cliente.
+</ParamField>
+
+## Response
+
+<ResponseField name="token" type="string">
+  JWT firmado con RS256. Incluye los claims `iss`, `aud`, `iat`, `exp`, `jti`, `sub` y `base`.
+</ResponseField>
+
+<ResponseField name="expires_in" type="integer">
+  Tiempo de vida del token en segundos. Por defecto `28800` (8 horas).
+</ResponseField>
+
+<ResponseField name="token_type" type="string">
+  Siempre `"Bearer"`.
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://auth.mipos.co.cr/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "base": "mi_empresa",
+    "password": "mi_password_seguro"
+  }'
+```
+
+```php PHP
+$ch = curl_init('https://auth.mipos.co.cr/login');
+curl_setopt_array($ch, [
+    CURLOPT_POST           => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+    CURLOPT_POSTFIELDS     => json_encode([
+        'base'     => 'mi_empresa',
+        'password' => 'mi_password_seguro',
+    ]),
+]);
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+$result = json_decode($response, true);
+
+if ($httpCode === 200) {
+    $token = $result['token'];
+    // Guardar $token para usarlo en requests posteriores
+}
+```
+
+```javascript Node.js
+const response = await fetch('https://auth.mipos.co.cr/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    base: 'mi_empresa',
+    password: 'mi_password_seguro',
+  }),
+});
+
+if (response.ok) {
+  const { token, expires_in } = await response.json();
+  // Guardar token para requests posteriores
+}
+```
+
+```python Python
+import requests
+
+response = requests.post('https://auth.mipos.co.cr/login', json={
+    'base': 'mi_empresa',
+    'password': 'mi_password_seguro',
+})
+
+if response.status_code == 200:
+    data = response.json()
+    token = data['token']
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 — Éxito
+{
+  "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImtleS0yMDI0LTAxIn0.eyJpc3MiOiJodHRwczovL2F1dGgubWlwb3MuY28uY3IiLCJhdWQiOiJodHRwczovL2F1dGgubWlwb3MuY28uY3IiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MTcwMDAyODgwMCwianRpIjoiYTFiMmMzZDRlNWY2YTFiMmMzZDRlNWY2YTFiMmMzZDQiLCJzdWIiOiJtaV9lbXByZXNhIiwiYmFzZSI6Im1pX2VtcHJlc2EifQ.firma_rsa256",
+  "expires_in": 28800,
+  "token_type": "Bearer"
+}
+```
+
+```json 400 — Campos faltantes
+{
+  "error": "bad_request",
+  "message": "Los campos base y password son requeridos"
+}
+```
+
+```json 401 — Credenciales inválidas
+{
+  "error": "invalid_credentials",
+  "message": "Base o contraseña incorrectos"
+}
+```
+</ResponseExample>

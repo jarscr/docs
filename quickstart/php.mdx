@@ -1,0 +1,98 @@
+---
+title: "PHP"
+description: "Integrar el Auth Server en tu aplicación PHP en 5 minutos"
+icon: "php"
+---
+
+## 1. Instalar dependencia
+
+```bash
+composer require firebase/php-jwt
+```
+
+## 2. Obtener token
+
+```php
+<?php
+
+function obtenerToken(string $base, string $password): string
+{
+    $ch = curl_init('https://auth.mipos.co.cr/login');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+        CURLOPT_POSTFIELDS     => json_encode([
+            'base'     => $base,
+            'password' => $password,
+        ]),
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode !== 200) {
+        $error = json_decode($response, true);
+        throw new \RuntimeException($error['message'] ?? 'Error de autenticación');
+    }
+
+    $result = json_decode($response, true);
+    return $result['token'];
+}
+
+// Uso
+$token = obtenerToken('mi_empresa', 'mi_password');
+```
+
+## 3. Verificar token en tu API
+
+```php
+<?php
+
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+function verificarToken(): object
+{
+    $publicKey = file_get_contents('/ruta/segura/public.pem');
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    $token = str_replace('Bearer ', '', $authHeader);
+
+    if ($token === '') {
+        http_response_code(401);
+        exit(json_encode(['error' => 'Token no proporcionado']));
+    }
+
+    try {
+        return JWT::decode($token, new Key($publicKey, 'RS256'));
+    } catch (\Exception $e) {
+        http_response_code(401);
+        exit(json_encode(['error' => 'Token inválido o expirado']));
+    }
+}
+
+// En tu endpoint protegido:
+$cliente = verificarToken();
+$base = $cliente->base; // Identificador del cliente
+```
+
+## 4. Usar en requests a otras APIs
+
+```php
+$token = obtenerToken('mi_empresa', 'mi_password');
+
+$ch = curl_init('https://api.mipos.co.cr/ventas');
+curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER     => [
+        'Authorization: Bearer ' . $token,
+        'Content-Type: application/json',
+    ],
+]);
+$ventas = json_decode(curl_exec($ch), true);
+```
+
+<Check>
+  **Listo.** Tu aplicación PHP puede autenticarse y verificar tokens del ecosistema MiPOS.
+</Check>

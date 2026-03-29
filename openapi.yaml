@@ -1,0 +1,180 @@
+openapi: 3.1.0
+info:
+  title: MiPOS Auth API
+  description: API de autenticación centralizada que emite JWT firmados con RS256.
+  version: 1.0.0
+  contact:
+    name: MiPOS
+    url: https://mipos.co.cr
+
+servers:
+  - url: https://auth.mipos.co.cr
+    description: Producción
+
+paths:
+  /login:
+    post:
+      operationId: login
+      summary: Autenticar cliente
+      description: Valida credenciales y emite un JWT firmado con RS256.
+      tags:
+        - Autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - base
+                - password
+              properties:
+                base:
+                  type: string
+                  description: Identificador único del cliente
+                  example: mi_empresa
+                password:
+                  type: string
+                  description: Contraseña del cliente
+                  example: "••••••••"
+      responses:
+        "200":
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          description: Campos faltantes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: bad_request
+                message: Los campos base y password son requeridos
+        "401":
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: invalid_credentials
+                message: Base o contraseña incorrectos
+        "405":
+          description: Método no permitido
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: method_not_allowed
+                message: Método no permitido
+
+  /.well-known/jwks.json:
+    get:
+      operationId: getJwks
+      summary: Obtener clave pública (JWKS)
+      description: |
+        Retorna la clave pública RSA en formato JSON Web Key Set (JWKS).
+        Las APIs cliente usan este endpoint para verificar la firma de los JWT
+        sin necesidad de tener una copia local de `public.pem`.
+      tags:
+        - Claves
+      responses:
+        "200":
+          description: JWKS con la clave pública activa
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JwksResponse"
+
+components:
+  schemas:
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT firmado con RS256
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImtleS0yMDI0LTAxIn0.eyJpc3MiOiJodHRwczovL2F1dGgubWlwb3MuY28uY3IiLCJhdWQiOiJodHRwczovL2F1dGgubWlwb3MuY28uY3IiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MTcwMDAyODgwMCwianRpIjoiYTFiMmMzZDRlNWY2YTFiMmMzZDRlNWY2YTFiMmMzZDQiLCJzdWIiOiJtaV9lbXByZXNhIiwiYmFzZSI6Im1pX2VtcHJlc2EifQ.signature
+        expires_in:
+          type: integer
+          description: Segundos hasta la expiración del token
+          example: 28800
+        token_type:
+          type: string
+          description: Tipo de token (siempre Bearer)
+          example: Bearer
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Código de error
+        message:
+          type: string
+          description: Descripción legible del error
+
+    JwksResponse:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            type: object
+            properties:
+              kty:
+                type: string
+                example: RSA
+              use:
+                type: string
+                example: sig
+              alg:
+                type: string
+                example: RS256
+              kid:
+                type: string
+                example: key-2024-01
+              "n":
+                type: string
+                description: Módulo RSA en base64url
+              e:
+                type: string
+                example: AQAB
+                description: Exponente RSA en base64url
+
+    JwtPayload:
+      type: object
+      description: Contenido decodificado del JWT
+      properties:
+        iss:
+          type: string
+          description: Emisor del token
+          example: https://auth.mipos.co.cr
+        aud:
+          type: string
+          description: Audiencia
+          example: https://auth.mipos.co.cr
+        iat:
+          type: integer
+          description: Timestamp Unix de emisión
+          example: 1700000000
+        exp:
+          type: integer
+          description: Timestamp Unix de expiración
+          example: 1700028800
+        jti:
+          type: string
+          description: ID único del token (32 hex)
+          example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+        sub:
+          type: string
+          description: Identificador del cliente
+          example: mi_empresa
+        base:
+          type: string
+          description: Nombre del cliente en la BD
+          example: mi_empresa

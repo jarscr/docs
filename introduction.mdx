@@ -1,0 +1,66 @@
+---
+title: "Introducción"
+description: "API de autenticación centralizada para el ecosistema MiPOS"
+---
+
+<Note>
+  Esta API es el único punto de autenticación. Las APIs cliente nunca acceden a la base de datos del Auth Server — solo verifican la firma del JWT.
+</Note>
+
+## ¿Cómo funciona?
+
+<Steps>
+  <Step title="Autenticarse">
+    Tu aplicación envía `base` y `password` al endpoint `/login`.
+  </Step>
+  <Step title="Recibir el JWT">
+    El Auth Server valida las credenciales y retorna un token JWT firmado con RS256.
+  </Step>
+  <Step title="Usar el token">
+    Envía el token en el header `Authorization: Bearer <token>` a cualquier API del ecosistema MiPOS.
+  </Step>
+  <Step title="Verificación sin BD">
+    La API cliente verifica la firma del JWT usando la clave pública. No necesita consultar ninguna base de datos.
+  </Step>
+</Steps>
+
+## Arquitectura
+
+```
+┌──────────────┐     POST /login      ┌───────────────────┐
+│              │ ──────────────────▶   │                   │
+│   Tu App     │                       │   Auth Server     │
+│              │ ◀──────────────────   │  auth.mipos.co.cr │
+└──────────────┘     { token }         └───────────────────┘
+       │                                        │
+       │  Authorization: Bearer <token>         │ Clave privada RSA
+       ▼                                        │ (nunca sale del servidor)
+┌──────────────┐                                │
+│  API Cliente  │  ◀── Clave pública ───────────┘
+│  (tu API)    │       (public.pem o JWKS)
+└──────────────┘
+```
+
+## Datos del token
+
+Cada JWT contiene esta información en su payload:
+
+<ResponseField name="iss" type="string">
+  Emisor del token — `https://auth.mipos.co.cr`
+</ResponseField>
+
+<ResponseField name="exp" type="integer">
+  Timestamp Unix de expiración. Por defecto, 8 horas después de la emisión.
+</ResponseField>
+
+<ResponseField name="sub" type="string">
+  Identificador del cliente autenticado.
+</ResponseField>
+
+<ResponseField name="base" type="string">
+  Nombre del cliente en la base de datos. Mismo valor que `sub`. Usar este campo para filtrar datos en cada API.
+</ResponseField>
+
+<ResponseField name="jti" type="string">
+  ID único del token (32 caracteres hex). Puede usarse para revocación si se implementa una lista negra.
+</ResponseField>

@@ -1,0 +1,51 @@
+---
+title: "Visión general"
+description: "Resumen de los endpoints disponibles en el Auth Server"
+---
+
+## Base URL
+
+```
+https://auth.mipos.co.cr
+```
+
+## Endpoints
+
+<CardGroup cols={2}>
+  <Card title="POST /login" icon="right-to-bracket" href="/api-reference/login">
+    Autenticar con `base` y `password` para obtener un JWT firmado.
+  </Card>
+  <Card title="GET /.well-known/jwks.json" icon="key" href="/api-reference/jwks">
+    Obtener la clave pública RSA en formato JWKS para verificar tokens.
+  </Card>
+</CardGroup>
+
+## Formato de respuesta
+
+Todas las respuestas son `application/json`.
+
+**Exitosas:**
+```json
+{
+  "token": "eyJhbGciOi...",
+  "expires_in": 28800,
+  "token_type": "Bearer"
+}
+```
+
+**Errores:**
+```json
+{
+  "error": "codigo_de_error",
+  "message": "Descripción legible"
+}
+```
+
+Ver la [referencia de errores](/api-reference/errors) para todos los códigos posibles.
+
+## Headers requeridos
+
+| Header | Valor | Requerido en |
+|--------|-------|-------------|
+| `Content-Type` | `application/json` | `POST /login` |
+| `Authorization` | `Bearer <token>` | APIs cliente (no en Auth Server) |

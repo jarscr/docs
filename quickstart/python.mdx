@@ -1,0 +1,116 @@
+---
+title: "Python"
+description: "Integrar el Auth Server en tu aplicación Python en 5 minutos"
+icon: "python"
+---
+
+## 1. Instalar dependencias
+
+```bash
+pip install requests PyJWT cryptography
+```
+
+## 2. Obtener token
+
+```python
+import requests
+
+def obtener_token(base: str, password: str) -> dict:
+    response = requests.post('https://auth.mipos.co.cr/login', json={
+        'base': base,
+        'password': password,
+    })
+
+    if response.status_code != 200:
+        error = response.json()
+        raise Exception(error.get('message', 'Error de autenticación'))
+
+    return response.json()
+
+# Uso
+data = obtener_token('mi_empresa', 'mi_password')
+token = data['token']
+expires_in = data['expires_in']
+```
+
+## 3. Verificar token
+
+```python
+import jwt
+
+def verificar_token(token: str, public_key_path: str = '/ruta/segura/public.pem') -> dict:
+    with open(public_key_path) as f:
+        public_key = f.read()
+
+    try:
+        return jwt.decode(token, public_key, algorithms=['RS256'])
+    except jwt.ExpiredSignatureError:
+        raise Exception('Token expirado')
+    except jwt.InvalidTokenError:
+        raise Exception('Token inválido')
+
+# Uso
+payload = verificar_token(token)
+base = payload['base']  # Identificador del cliente
+```
+
+## 4. Middleware para Flask
+
+```python
+from functools import wraps
+from flask import request, jsonify
+import jwt
+
+PUBLIC_KEY = open('/ruta/segura/public.pem').read()
+
+def requiere_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get('Authorization', '')
+        token = auth_header.replace('Bearer ', '')
+
+        if not token:
+            return jsonify({'error': 'Token no proporcionado'}), 401
+
+        try:
+            request.cliente = jwt.decode(token, PUBLIC_KEY, algorithms=['RS256'])
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Token inválido o expirado'}), 401
+
+        return f(*args, **kwargs)
+    return decorated
+
+# Uso
+@app.route('/ventas')
+@requiere_auth
+def ventas():
+    base = request.cliente['base']
+    # ... lógica del endpoint
+```
+
+## 5. Middleware para FastAPI
+
+```python
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import jwt
+
+PUBLIC_KEY = open('/ruta/segura/public.pem').read()
+security = HTTPBearer()
+
+async def verificar_auth(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        return jwt.decode(credentials.credentials, PUBLIC_KEY, algorithms=['RS256'])
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail='Token inválido o expirado')
+
+# Uso
+@app.get('/ventas')
+async def ventas(cliente: dict = Depends(verificar_auth)):
+    base = cliente['base']
+    # ... lógica del endpoint
+```
+
+<Check>
+  **Listo.** Tu aplicación Python puede autenticarse y verificar tokens del ecosistema MiPOS.
+</Check>
