@@ -1,0 +1,92 @@
+---
+title: "Consultar Identificación"
+description: "Consultar datos de un contribuyente por número de identificación"
+---
+
+Consulta los datos de un contribuyente en el Ministerio de Hacienda a partir de su número de identificación (cédula física, jurídica, DIMEX o NITE).
+
+## Request
+
+```
+POST https://{empresa}.mipos.co.cr/api/hacienda/identificacion
+```
+
+<ParamField body="identificacion" type="string" required>
+  Número de identificación del contribuyente a consultar.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://{empresa}.mipos.co.cr/api/hacienda/identificacion \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{
+    "identificacion": "208370410"
+  }'
+```
+
+```php PHP
+$ch = curl_init('https://{empresa}.mipos.co.cr/api/hacienda/identificacion');
+curl_setopt_array($ch, [
+    CURLOPT_POST           => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER     => [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . $token,
+    ],
+    CURLOPT_POSTFIELDS     => json_encode([
+        'identificacion' => '208370410',
+    ]),
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+$result = json_decode($response, true);
+```
+
+```javascript Node.js
+const response = await fetch('https://{empresa}.mipos.co.cr/api/hacienda/identificacion', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  },
+  body: JSON.stringify({ identificacion: '208370410' }),
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://{empresa}.mipos.co.cr/api/hacienda/identificacion',
+    headers={'Authorization': f'Bearer {token}'},
+    json={'identificacion': '208370410'},
+)
+
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 — Contribuyente encontrado
+{
+  "status": "success",
+  "data": {
+    "nombre": "JUAN PEREZ GARCIA",
+    "tipoIdentificacion": "01",
+    "identificacion": "208370410"
+  }
+}
+```
+
+```json 404 — No encontrado
+{
+  "error": "not_found",
+  "message": "Identificación no encontrada"
+}
+```
+</ResponseExample>

@@ -31,6 +31,10 @@
       "url": "api-reference"
     },
     {
+      "name": "API Cliente",
+      "url": "api-reference/cliente"
+    },
+    {
       "name": "Playground",
       "url": "playground"
     }
@@ -71,6 +75,46 @@
       "group": "Playground",
       "pages": [
         "playground/index"
+      ]
+    },
+    {
+      "group": "Visión general",
+      "pages": [
+        "api-reference/cliente/overview"
+      ]
+    },
+    {
+      "group": "Documentos",
+      "pages": [
+        "api-reference/cliente/enviar-factura",
+        "api-reference/cliente/enviar-tiquete",
+        "api-reference/cliente/enviar-tiquete-extranjero",
+        "api-reference/cliente/enviar-nota-credito",
+        "api-reference/cliente/enviar-exoneracion"
+      ]
+    },
+    {
+      "group": "Emisor",
+      "pages": [
+        "api-reference/cliente/registrar-emisor",
+        "api-reference/cliente/actualizar-emisor",
+        "api-reference/cliente/consultar-emisor"
+      ]
+    },
+    {
+      "group": "Consultas Hacienda",
+      "pages": [
+        "api-reference/cliente/consultar-cabys",
+        "api-reference/cliente/consultar-identificacion",
+        "api-reference/cliente/consultar-exoneracion"
+      ]
+    },
+    {
+      "group": "Archivos y Webhooks",
+      "pages": [
+        "api-reference/cliente/descargar-archivo",
+        "api-reference/cliente/webhooks/xml-return",
+        "api-reference/cliente/webhooks/callback"
       ]
     }
   ],

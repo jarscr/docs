@@ -1,0 +1,208 @@
+---
+title: "Actualizar Emisor"
+description: "Actualizar datos de un emisor registrado"
+---
+
+Actualiza los datos de un emisor previamente registrado. La estructura del body es idéntica a la de [Registrar Emisor](/api-reference/cliente/registrar-emisor).
+
+## Request
+
+```
+POST https://{empresa}.mipos.co.cr/api/actualizar/emisor
+```
+
+### Campos
+
+Todos los campos son los mismos que en [Registrar Emisor](/api-reference/cliente/registrar-emisor):
+
+<ParamField body="identificacion" type="number" required>
+  Número de identificación del emisor a actualizar.
+</ParamField>
+
+<ParamField body="tipoIdentificacion" type="number" required>
+  Tipo de identificación: `1` Física, `2` Jurídica, `3` DIMEX, `4` NITE.
+</ParamField>
+
+<ParamField body="codigoActividad" type="number" required>
+  Código de actividad económica.
+</ParamField>
+
+<ParamField body="sucursal" type="number" required>
+  Número de sucursal.
+</ParamField>
+
+<ParamField body="nombreComercial" type="string" required>
+  Nombre comercial o razón social.
+</ParamField>
+
+<ParamField body="telefono" type="string" required>
+  Número de teléfono.
+</ParamField>
+
+<ParamField body="correoElectronico" type="string" required>
+  Correo electrónico.
+</ParamField>
+
+<ParamField body="ubicacion" type="object" required>
+  Dirección física. Ver [Registrar Emisor](/api-reference/cliente/registrar-emisor) para la estructura.
+</ParamField>
+
+<ParamField body="ambiente" type="number" required>
+  Ambiente: `1` Producción, `2` Pruebas.
+</ParamField>
+
+<ParamField body="usuarioHacienda" type="string" required>
+  Usuario de acceso a comprobantes electrónicos.
+</ParamField>
+
+<ParamField body="claveHacienda" type="string" required>
+  Clave de acceso (base64).
+</ParamField>
+
+<ParamField body="pinCertificado" type="string" required>
+  PIN del certificado digital.
+</ParamField>
+
+<ParamField body="certificadoHacienda" type="string" required>
+  Certificado `.p12` en base64.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://{empresa}.mipos.co.cr/api/actualizar/emisor \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{
+    "identificacion": 102340568,
+    "tipoIdentificacion": 1,
+    "codigoActividad": 4772.0,
+    "sucursal": 1,
+    "nombreComercial": "MI EMPRESA S.A.",
+    "telefono": "88180000",
+    "correoElectronico": "nuevo@ejemplo.com",
+    "ubicacion": {
+      "provincia": "1",
+      "canton": "06",
+      "distrito": "01",
+      "barrio": "04",
+      "direccion": "Nueva dirección"
+    },
+    "ambiente": 1,
+    "usuarioHacienda": "cpf-01-0234-0567@stag.comprobanteselectronicos.go.cr",
+    "claveHacienda": "BASE64_ENCODED_KEY",
+    "pinCertificado": "1234",
+    "certificadoHacienda": "BASE64_ENCODED_P12_CERTIFICATE"
+  }'
+```
+
+```php PHP
+$ch = curl_init('https://{empresa}.mipos.co.cr/api/actualizar/emisor');
+curl_setopt_array($ch, [
+    CURLOPT_POST           => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER     => [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . $token,
+    ],
+    CURLOPT_POSTFIELDS     => json_encode([
+        'identificacion'      => 102340568,
+        'tipoIdentificacion'  => 1,
+        'codigoActividad'     => 4772.0,
+        'sucursal'            => 1,
+        'nombreComercial'     => 'MI EMPRESA S.A.',
+        'telefono'            => '88180000',
+        'correoElectronico'   => 'nuevo@ejemplo.com',
+        'ubicacion'           => [
+            'provincia' => '1', 'canton' => '06',
+            'distrito'  => '01', 'barrio' => '04',
+            'direccion' => 'Nueva dirección',
+        ],
+        'ambiente'            => 1,
+        'usuarioHacienda'     => 'cpf-01-0234-0567@stag.comprobanteselectronicos.go.cr',
+        'claveHacienda'       => 'BASE64_ENCODED_KEY',
+        'pinCertificado'      => '1234',
+        'certificadoHacienda' => $certificado,
+    ]),
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+```
+
+```javascript Node.js
+const response = await fetch('https://{empresa}.mipos.co.cr/api/actualizar/emisor', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    identificacion: 102340568,
+    tipoIdentificacion: 1,
+    codigoActividad: 4772.0,
+    sucursal: 1,
+    nombreComercial: 'MI EMPRESA S.A.',
+    telefono: '88180000',
+    correoElectronico: 'nuevo@ejemplo.com',
+    ubicacion: {
+      provincia: '1', canton: '06',
+      distrito: '01', barrio: '04',
+      direccion: 'Nueva dirección',
+    },
+    ambiente: 1,
+    usuarioHacienda: 'cpf-01-0234-0567@stag.comprobanteselectronicos.go.cr',
+    claveHacienda: 'BASE64_ENCODED_KEY',
+    pinCertificado: '1234',
+    certificadoHacienda: certificado,
+  }),
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://{empresa}.mipos.co.cr/api/actualizar/emisor',
+    headers={'Authorization': f'Bearer {token}'},
+    json={
+        'identificacion': 102340568,
+        'tipoIdentificacion': 1,
+        'codigoActividad': 4772.0,
+        'sucursal': 1,
+        'nombreComercial': 'MI EMPRESA S.A.',
+        'telefono': '88180000',
+        'correoElectronico': 'nuevo@ejemplo.com',
+        'ubicacion': {
+            'provincia': '1', 'canton': '06',
+            'distrito': '01', 'barrio': '04',
+            'direccion': 'Nueva dirección',
+        },
+        'ambiente': 1,
+        'usuarioHacienda': 'cpf-01-0234-0567@stag.comprobanteselectronicos.go.cr',
+        'claveHacienda': 'BASE64_ENCODED_KEY',
+        'pinCertificado': '1234',
+        'certificadoHacienda': certificado,
+    },
+)
+
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 — Emisor actualizado
+{
+  "status": "success",
+  "message": "Emisor actualizado correctamente"
+}
+```
+
+```json 401 — No autorizado
+{
+  "error": "unauthorized",
+  "message": "Token inválido o expirado"
+}
+```
+</ResponseExample>

@@ -1,0 +1,97 @@
+---
+title: "Consultar CABYS"
+description: "Buscar códigos CABYS por nombre de producto o servicio"
+---
+
+Busca códigos CABYS (Catálogo de Bienes y Servicios) del Ministerio de Hacienda por nombre. Útil para obtener el código correcto al crear líneas de detalle en documentos electrónicos.
+
+## Request
+
+```
+POST https://{empresa}.mipos.co.cr/api/hacienda/cabys
+```
+
+<ParamField body="name" type="string" required>
+  Nombre o término de búsqueda del producto o servicio (ej: `"AGUA"`, `"INTERNET"`).
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://{empresa}.mipos.co.cr/api/hacienda/cabys \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{
+    "name": "AGUA"
+  }'
+```
+
+```php PHP
+$ch = curl_init('https://{empresa}.mipos.co.cr/api/hacienda/cabys');
+curl_setopt_array($ch, [
+    CURLOPT_POST           => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER     => [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . $token,
+    ],
+    CURLOPT_POSTFIELDS     => json_encode([
+        'name' => 'AGUA',
+    ]),
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+$result = json_decode($response, true);
+```
+
+```javascript Node.js
+const response = await fetch('https://{empresa}.mipos.co.cr/api/hacienda/cabys', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  },
+  body: JSON.stringify({ name: 'AGUA' }),
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://{empresa}.mipos.co.cr/api/hacienda/cabys',
+    headers={'Authorization': f'Bearer {token}'},
+    json={'name': 'AGUA'},
+)
+
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 — Resultados encontrados
+{
+  "status": "success",
+  "data": [
+    {
+      "codigo": "0111001000000",
+      "descripcion": "Agua mineral natural"
+    },
+    {
+      "codigo": "0111002000000",
+      "descripcion": "Agua purificada"
+    }
+  ]
+}
+```
+
+```json 401 — No autorizado
+{
+  "error": "unauthorized",
+  "message": "Token inválido o expirado"
+}
+```
+</ResponseExample>

@@ -1,0 +1,112 @@
+---
+title: "XML Return (Webhook)"
+description: "Respuesta XML de Hacienda enviada a tu servidor"
+---
+
+Cuando Hacienda procesa un comprobante electrónico, envía la respuesta XML a la URL de webhook configurada en tu sistema. Este payload es enviado por Hacienda, no por el API de MiPOS.
+
+<Note>
+  Tu servidor debe estar preparado para recibir este POST en la URL de webhook que configuraste. La respuesta contiene el XML firmado por Hacienda codificado en base64.
+</Note>
+
+## Payload recibido
+
+```
+POST https://{tu-webhook-url}
+```
+
+<ResponseField name="folioId" type="string">
+  Identificador del folio del documento procesado.
+</ResponseField>
+
+<ResponseField name="folioType" type="string">
+  Tipo de folio. Generalmente `"INVOICE"`.
+</ResponseField>
+
+<ResponseField name="folioDetails" type="array">
+  Array con los archivos de respuesta.
+
+  <Expandable title="Propiedades de cada detalle">
+    <ResponseField name="fileType" type="string">
+      Tipo de archivo. Generalmente `"XML"`.
+    </ResponseField>
+    <ResponseField name="encodedFile" type="string">
+      Contenido del archivo XML codificado en base64. Al decodificarlo se obtiene el `MensajeHacienda` con el estado del comprobante.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Ejemplo del payload
+
+```json
+{
+  "folioId": "051744",
+  "folioType": "INVOICE",
+  "folioDetails": [
+    {
+      "fileType": "XML",
+      "encodedFile": "PD94bWwgdmVyc2lvbj0iMS4wIi..."
+    }
+  ]
+}
+```
+
+## Decodificar la respuesta XML
+
+El campo `encodedFile` contiene un XML `MensajeHacienda` codificado en base64. Al decodificarlo incluye:
+
+| Campo | Descripción |
+|-------|-------------|
+| `Clave` | Clave numérica de 50 dígitos del comprobante |
+| `NombreEmisor` | Nombre del emisor |
+| `NombreReceptor` | Nombre del receptor |
+| `Mensaje` | Estado: `1` = Aceptado, `2` = Aceptado parcialmente, `3` = Rechazado |
+| `DetalleMensaje` | Detalle del resultado del procesamiento |
+| `MontoTotalImpuesto` | Total de impuestos |
+| `TotalFactura` | Total de la factura |
+
+<CodeGroup>
+```php PHP
+$payload = json_decode(file_get_contents('php://input'), true);
+
+foreach ($payload['folioDetails'] as $detail) {
+    $xml = base64_decode($detail['encodedFile']);
+    $doc = simplexml_load_string($xml);
+
+    $clave = (string) $doc->Clave;
+    $estado = (string) $doc->Mensaje; // 1=aceptado, 3=rechazado
+    $detalle = (string) $doc->DetalleMensaje;
+}
+```
+
+```javascript Node.js
+app.post('/webhook', (req, res) => {
+  const { folioId, folioDetails } = req.body;
+
+  for (const detail of folioDetails) {
+    const xml = Buffer.from(detail.encodedFile, 'base64').toString('utf-8');
+    // Parsear XML para obtener estado
+    console.log(`Folio ${folioId}:`, xml);
+  }
+
+  res.sendStatus(200);
+});
+```
+
+```python Python
+from flask import Flask, request
+import base64
+
+app = Flask(__name__)
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    payload = request.json
+    for detail in payload['folioDetails']:
+        xml = base64.b64decode(detail['encodedFile']).decode('utf-8')
+        # Parsear XML para obtener estado
+        print(f"Folio {payload['folioId']}: {xml}")
+
+    return '', 200
+```
+</CodeGroup>

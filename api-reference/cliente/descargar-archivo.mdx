@@ -1,0 +1,96 @@
+---
+title: "Descargar Factura"
+description: "Descargar el archivo de una factura por clave de Hacienda"
+---
+
+Descarga el archivo XML o PDF de un comprobante electrónico previamente enviado, utilizando la clave numérica de Hacienda de 50 dígitos.
+
+## Request
+
+```
+POST https://{empresa}.mipos.co.cr/api/consultar/archivo
+```
+
+<ParamField body="claveHacienda" type="string" required>
+  Clave numérica de 50 dígitos asignada por Hacienda al comprobante electrónico.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://{empresa}.mipos.co.cr/api/consultar/archivo \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{
+    "claveHacienda": "50628032600310295515400200070010000000001146404019"
+  }'
+```
+
+```php PHP
+$ch = curl_init('https://{empresa}.mipos.co.cr/api/consultar/archivo');
+curl_setopt_array($ch, [
+    CURLOPT_POST           => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER     => [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . $token,
+    ],
+    CURLOPT_POSTFIELDS     => json_encode([
+        'claveHacienda' => '50628032600310295515400200070010000000001146404019',
+    ]),
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+$result = json_decode($response, true);
+```
+
+```javascript Node.js
+const response = await fetch('https://{empresa}.mipos.co.cr/api/consultar/archivo', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    claveHacienda: '50628032600310295515400200070010000000001146404019',
+  }),
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://{empresa}.mipos.co.cr/api/consultar/archivo',
+    headers={'Authorization': f'Bearer {token}'},
+    json={
+        'claveHacienda': '50628032600310295515400200070010000000001146404019',
+    },
+)
+
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 — Archivo encontrado
+{
+  "status": "success",
+  "data": {
+    "claveHacienda": "50628032600310295515400200070010000000001146404019",
+    "fileType": "XML",
+    "encodedFile": "PD94bWwgdmVyc2lvbj0iMS4wIi..."
+  }
+}
+```
+
+```json 404 — No encontrado
+{
+  "error": "not_found",
+  "message": "Archivo no encontrado para la clave proporcionada"
+}
+```
+</ResponseExample>

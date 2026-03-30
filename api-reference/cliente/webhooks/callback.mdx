@@ -1,0 +1,119 @@
+---
+title: "Callback"
+description: "Callback con el estado del comprobante electrónico"
+---
+
+El sistema envía un callback HTTP POST a tu endpoint configurado cuando Hacienda devuelve el estado de un comprobante electrónico. Este callback incluye la clave del documento, la fecha, el estado y la respuesta XML.
+
+<Note>
+  Configura tu URL de callback al registrar el emisor. El callback se envía automáticamente cuando Hacienda responde.
+</Note>
+
+## Payload recibido
+
+```
+POST https://{tu-callback-url}/callback.php
+```
+
+<ResponseField name="clave" type="string">
+  Clave numérica de 50 dígitos del comprobante electrónico.
+</ResponseField>
+
+<ResponseField name="fecha" type="string">
+  Fecha y hora del procesamiento en formato ISO 8601 con zona horaria (ej: `"2024-10-01T15:51:22-06:00"`).
+</ResponseField>
+
+<ResponseField name="ind-estado" type="string">
+  Estado del comprobante:
+  - `"aceptado"` — Comprobante aceptado por Hacienda
+  - `"rechazado"` — Comprobante rechazado por Hacienda
+  - `"aceptado parcialmente"` — Aceptado con observaciones
+</ResponseField>
+
+<ResponseField name="respuesta-xml" type="string">
+  Respuesta XML de Hacienda codificada en base64. Contiene el `MensajeHacienda` firmado.
+</ResponseField>
+
+## Ejemplo del payload
+
+```json
+{
+  "clave": "50601102400300404520200200070010000042681104691472",
+  "fecha": "2024-10-01T15:51:22-06:00",
+  "ind-estado": "aceptado",
+  "respuesta-xml": "PD94bWwgdmVyc2lvbj0iMS4wIi..."
+}
+```
+
+## Procesar el callback
+
+<CodeGroup>
+```php PHP
+$payload = json_decode(file_get_contents('php://input'), true);
+
+$clave = $payload['clave'];
+$estado = $payload['ind-estado'];
+$fecha = $payload['fecha'];
+$xml = base64_decode($payload['respuesta-xml']);
+
+// Procesar según estado
+switch ($estado) {
+    case 'aceptado':
+        // Marcar factura como aceptada
+        actualizarEstado($clave, 'aceptada');
+        break;
+    case 'rechazado':
+        // Notificar rechazo y revisar errores
+        $doc = simplexml_load_string($xml);
+        $detalle = (string) $doc->DetalleMensaje;
+        notificarRechazo($clave, $detalle);
+        break;
+}
+
+http_response_code(200);
+```
+
+```javascript Node.js
+app.post('/callback', (req, res) => {
+  const { clave, fecha, 'ind-estado': estado, 'respuesta-xml': xmlBase64 } = req.body;
+  const xml = Buffer.from(xmlBase64, 'base64').toString('utf-8');
+
+  switch (estado) {
+    case 'aceptado':
+      // Marcar factura como aceptada
+      console.log(`Factura ${clave} aceptada el ${fecha}`);
+      break;
+    case 'rechazado':
+      // Notificar rechazo
+      console.log(`Factura ${clave} rechazada:`, xml);
+      break;
+  }
+
+  res.sendStatus(200);
+});
+```
+
+```python Python
+from flask import Flask, request
+import base64
+
+app = Flask(__name__)
+
+@app.route('/callback', methods=['POST'])
+def callback():
+    payload = request.json
+    clave = payload['clave']
+    estado = payload['ind-estado']
+    fecha = payload['fecha']
+    xml = base64.b64decode(payload['respuesta-xml']).decode('utf-8')
+
+    if estado == 'aceptado':
+        # Marcar factura como aceptada
+        print(f'Factura {clave} aceptada el {fecha}')
+    elif estado == 'rechazado':
+        # Notificar rechazo
+        print(f'Factura {clave} rechazada: {xml}')
+
+    return '', 200
+```
+</CodeGroup>
