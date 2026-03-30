@@ -2,8 +2,8 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "MiPOS Auth API",
   "logo": {
-    "dark": "/images/logo-dark.svg",
-    "light": "/images/logo-light.svg"
+    "dark": "/logo/dark.svg",
+    "light": "/logo/light.svg"
   },
   "favicon": "/images/favicon.svg",
   "colors": {
