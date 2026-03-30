@@ -1,0 +1,93 @@
+---
+title: "API Cliente"
+description: "Endpoints para facturación electrónica, gestión de emisores y consultas a Hacienda"
+---
+
+## Base URL
+
+Cada cliente tiene su propia URL de API. Reemplaza `{empresa}` con tu identificador:
+
+```
+https://{empresa}.mipos.co.cr
+```
+
+<Note>
+  Todos los endpoints requieren autenticación. Incluye el header `Authorization: Bearer <token>` obtenido desde el [Auth Server](/api-reference/login).
+</Note>
+
+## Headers requeridos
+
+| Header | Valor | Requerido |
+|--------|-------|-----------|
+| `Content-Type` | `application/json` | Siempre |
+| `Authorization` | `Bearer <token>` | Siempre |
+
+## Documentos Electrónicos
+
+<CardGroup cols={2}>
+  <Card title="Factura Electrónica" icon="file-invoice-dollar" href="/api-reference/cliente/enviar-factura">
+    Emitir factura electrónica con receptor identificado.
+  </Card>
+  <Card title="Tiquete Electrónico" icon="receipt" href="/api-reference/cliente/enviar-tiquete">
+    Emitir tiquete sin receptor (venta al público).
+  </Card>
+  <Card title="Tiquete Extranjero" icon="plane" href="/api-reference/cliente/enviar-tiquete-extranjero">
+    Emitir tiquete para receptor con identificación extranjera.
+  </Card>
+  <Card title="Nota de Crédito" icon="file-circle-minus" href="/api-reference/cliente/enviar-nota-credito">
+    Emitir nota de crédito electrónica.
+  </Card>
+  <Card title="Factura con Exoneración" icon="file-shield" href="/api-reference/cliente/enviar-exoneracion">
+    Emitir factura con exoneración de impuestos.
+  </Card>
+</CardGroup>
+
+## Gestión de Emisor
+
+<CardGroup cols={3}>
+  <Card title="Registrar Emisor" icon="user-plus" href="/api-reference/cliente/registrar-emisor">
+    Registrar un nuevo emisor con su certificado de Hacienda.
+  </Card>
+  <Card title="Actualizar Emisor" icon="user-pen" href="/api-reference/cliente/actualizar-emisor">
+    Actualizar datos de un emisor existente.
+  </Card>
+  <Card title="Consultar Emisor" icon="user-check" href="/api-reference/cliente/consultar-emisor">
+    Consultar información de un emisor registrado.
+  </Card>
+</CardGroup>
+
+## Consultas a Hacienda
+
+<CardGroup cols={3}>
+  <Card title="Consultar CABYS" icon="barcode" href="/api-reference/cliente/consultar-cabys">
+    Buscar códigos CABYS por nombre de producto/servicio.
+  </Card>
+  <Card title="Consultar Identificación" icon="id-card" href="/api-reference/cliente/consultar-identificacion">
+    Consultar datos de un contribuyente por cédula.
+  </Card>
+  <Card title="Consultar Exoneración" icon="file-shield" href="/api-reference/cliente/consultar-exoneracion">
+    Validar un documento de exoneración.
+  </Card>
+</CardGroup>
+
+## Archivos y Webhooks
+
+<CardGroup cols={3}>
+  <Card title="Descargar Factura" icon="download" href="/api-reference/cliente/descargar-archivo">
+    Descargar el archivo de una factura por clave de Hacienda.
+  </Card>
+  <Card title="XML Return" icon="code" href="/api-reference/cliente/webhooks/xml-return">
+    Respuesta XML que Hacienda envía a tu webhook.
+  </Card>
+  <Card title="Callback" icon="rotate" href="/api-reference/cliente/webhooks/callback">
+    Callback con el estado del comprobante electrónico.
+  </Card>
+</CardGroup>
+
+## Tipos de documento
+
+| Código | Tipo | Descripción |
+|--------|------|-------------|
+| `"1"` | Factura Electrónica | Documento tributario con receptor identificado |
+| `"3"` | Nota de Crédito | Documento para anular o ajustar una factura |
+| `"4"` | Tiquete Electrónico | Documento simplificado sin receptor obligatorio |

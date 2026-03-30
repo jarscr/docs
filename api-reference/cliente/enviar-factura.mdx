@@ -1,0 +1,435 @@
+---
+title: "Factura Electrónica"
+description: "Emitir una factura electrónica con receptor identificado"
+---
+
+Envía una factura electrónica (tipoDoc `"1"`) al Ministerio de Hacienda a través del API.
+
+<Note>
+  Requiere un receptor con identificación válida (cédula física, jurídica, DIMEX o NITE).
+</Note>
+
+## Request
+
+```
+POST https://{empresa}.mipos.co.cr/api/enviar/items
+```
+
+### Campos principales
+
+<ParamField body="emisor" type="string" required>
+  Número de identificación del emisor registrado.
+</ParamField>
+
+<ParamField body="numeroReferencia" type="integer" required>
+  Número consecutivo de referencia del documento.
+</ParamField>
+
+<ParamField body="codigoActividad" type="string" required>
+  Código de actividad económica del emisor (ej: `"6201.0"`).
+</ParamField>
+
+<ParamField body="tipoDoc" type="string" required>
+  Tipo de documento. Para factura electrónica: `"1"`.
+</ParamField>
+
+<ParamField body="folioType" type="string" required>
+  Tipo de folio. Siempre `"INVOICE"`.
+</ParamField>
+
+<ParamField body="fechaEmision" type="string" required>
+  Fecha y hora de emisión en formato ISO 8601.
+</ParamField>
+
+### Receptor
+
+<ParamField body="receptor" type="object" required>
+  Datos del receptor del documento.
+
+  <Expandable title="Propiedades">
+    <ParamField body="nombre" type="string" required>
+      Nombre completo o razón social del receptor.
+    </ParamField>
+    <ParamField body="telefono" type="string">
+      Número de teléfono del receptor.
+    </ParamField>
+    <ParamField body="identificacion" type="object" required>
+      <Expandable title="Propiedades">
+        <ParamField body="tipo" type="string" required>
+          Tipo de identificación: `"01"` Física, `"02"` Jurídica, `"03"` DIMEX, `"04"` NITE.
+        </ParamField>
+        <ParamField body="numero" type="string" required>
+          Número de identificación.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField body="correoElectronico" type="string">
+      Correo electrónico del receptor.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Detalle del servicio
+
+<ParamField body="detalleServicio" type="array" required>
+  Líneas de detalle del documento.
+
+  <Expandable title="Propiedades de cada línea">
+    <ParamField body="numeroLinea" type="integer" required>
+      Número consecutivo de la línea (inicia en 1).
+    </ParamField>
+    <ParamField body="codigo" type="string" required>
+      Código CABYS del producto o servicio.
+    </ParamField>
+    <ParamField body="detalle" type="string" required>
+      Descripción del producto o servicio.
+    </ParamField>
+    <ParamField body="cantidad" type="number" required>
+      Cantidad del producto o servicio.
+    </ParamField>
+    <ParamField body="unidadMedida" type="string" required>
+      Unidad de medida (ej: `"Unid"`, `"Os"`, `"Sp"`).
+    </ParamField>
+    <ParamField body="unidadMedidaComercial" type="string">
+      Unidad de medida comercial.
+    </ParamField>
+    <ParamField body="precioUnitario" type="string" required>
+      Precio unitario del producto.
+    </ParamField>
+    <ParamField body="subTotal" type="string" required>
+      Subtotal de la línea (cantidad x precio unitario).
+    </ParamField>
+    <ParamField body="descuento" type="string">
+      Monto de descuento aplicado. `"0.00"` si no hay descuento.
+    </ParamField>
+    <ParamField body="montoTotal" type="string" required>
+      Monto total de la línea antes de impuestos.
+    </ParamField>
+    <ParamField body="impuestoNeto" type="number" required>
+      Monto neto de impuesto de la línea.
+    </ParamField>
+    <ParamField body="montoTotalLinea" type="number" required>
+      Monto total de la línea incluyendo impuestos.
+    </ParamField>
+    <ParamField body="codigoComercial" type="array">
+      Códigos comerciales del producto.
+      <Expandable title="Propiedades">
+        <ParamField body="tipo" type="string" required>
+          Tipo de código comercial (ej: `"04"`).
+        </ParamField>
+        <ParamField body="codigo" type="string" required>
+          Código del producto (ej: `"I_INT"`).
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField body="impuesto" type="array" required>
+      Impuestos aplicados a la línea.
+      <Expandable title="Propiedades">
+        <ParamField body="codigo" type="string" required>
+          Código de impuesto. `"01"` = IVA.
+        </ParamField>
+        <ParamField body="codigoTarifa" type="string" required>
+          Código de tarifa. `"08"` = tarifa general 13%.
+        </ParamField>
+        <ParamField body="tarifa" type="string" required>
+          Porcentaje de la tarifa (ej: `"13"`).
+        </ParamField>
+        <ParamField body="monto" type="string" required>
+          Monto del impuesto calculado.
+        </ParamField>
+      </Expandable>
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Otros cargos (opcional)
+
+<ParamField body="otrosCargos" type="array">
+  Cargos adicionales al documento.
+
+  <Expandable title="Propiedades de cada cargo">
+    <ParamField body="tipoDocumento" type="string" required>
+      Tipo de documento del cargo (ej: `"99"` para otros).
+    </ParamField>
+    <ParamField body="detalle" type="string" required>
+      Descripción del cargo (ej: `"911"`, `"CR"`).
+    </ParamField>
+    <ParamField body="montoCargo" type="string" required>
+      Monto del cargo.
+    </ParamField>
+    <ParamField body="porcentaje" type="string" required>
+      Porcentaje del cargo.
+    </ParamField>
+    <ParamField body="nombreTercero" type="string">
+      Nombre del tercero asociado al cargo.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Resumen de factura
+
+<ParamField body="resumenFactura" type="object" required>
+  Resumen totales del documento.
+
+  <Expandable title="Propiedades">
+    <ParamField body="codigoTipoMoneda" type="object" required>
+      <Expandable title="Propiedades">
+        <ParamField body="codigoMoneda" type="string" required>
+          Código de moneda ISO 4217 (ej: `"CRC"`, `"USD"`).
+        </ParamField>
+      </Expandable>
+    </ParamField>
+    <ParamField body="totalOtrosCargos" type="string">
+      Total de otros cargos.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST https://{empresa}.mipos.co.cr/api/enviar/items \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer {token}" \
+  -d '{
+    "emisor": "3102955154",
+    "numeroReferencia": 10,
+    "codigoActividad": "6201.0",
+    "tipoDoc": "1",
+    "receptor": {
+      "nombre": "JUAN PEREZ GARCIA",
+      "telefono": "50688881234",
+      "identificacion": {
+        "tipo": "01",
+        "numero": "504300485"
+      },
+      "correoElectronico": "cliente@ejemplo.com"
+    },
+    "folioType": "INVOICE",
+    "otrosCargos": [
+      {
+        "detalle": "911",
+        "montoCargo": "165.90",
+        "porcentaje": "0.75",
+        "nombreTercero": "911",
+        "tipoDocumento": "99"
+      }
+    ],
+    "fechaEmision": "2024-08-23T10:30:00-06:00",
+    "resumenFactura": {
+      "codigoTipoMoneda": {
+        "codigoMoneda": "CRC"
+      },
+      "totalOtrosCargos": "165.90"
+    },
+    "detalleServicio": [
+      {
+        "codigo": "8421000000000",
+        "detalle": "INTERNET RESIDENCIAL 200 MBPS",
+        "cantidad": 1.0,
+        "impuesto": [
+          {
+            "monto": "2875.53",
+            "codigo": "01",
+            "tarifa": "13",
+            "codigoTarifa": "08"
+          }
+        ],
+        "subTotal": "22119.47",
+        "descuento": "0.00",
+        "montoTotal": "22119.47",
+        "numeroLinea": 1,
+        "impuestoNeto": 2875.53,
+        "unidadMedida": "Os",
+        "precioUnitario": "22119.47",
+        "codigoComercial": [
+          {
+            "tipo": "04",
+            "codigo": "I_INT"
+          }
+        ],
+        "montoTotalLinea": 24995.0,
+        "unidadMedidaComercial": "Os"
+      }
+    ]
+  }'
+```
+
+```php PHP
+$ch = curl_init('https://{empresa}.mipos.co.cr/api/enviar/items');
+curl_setopt_array($ch, [
+    CURLOPT_POST           => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER     => [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . $token,
+    ],
+    CURLOPT_POSTFIELDS     => json_encode([
+        'emisor'            => '3102955154',
+        'numeroReferencia'  => 10,
+        'codigoActividad'   => '6201.0',
+        'tipoDoc'           => '1',
+        'receptor'          => [
+            'nombre'             => 'JUAN PEREZ GARCIA',
+            'telefono'           => '50688881234',
+            'identificacion'     => [
+                'tipo'   => '01',
+                'numero' => '504300485',
+            ],
+            'correoElectronico'  => 'cliente@ejemplo.com',
+        ],
+        'folioType'         => 'INVOICE',
+        'fechaEmision'      => date('c'),
+        'resumenFactura'    => [
+            'codigoTipoMoneda' => ['codigoMoneda' => 'CRC'],
+        ],
+        'detalleServicio'   => [
+            [
+                'codigo'          => '8421000000000',
+                'detalle'         => 'INTERNET RESIDENCIAL 200 MBPS',
+                'cantidad'        => 1.0,
+                'precioUnitario'  => '22119.47',
+                'subTotal'        => '22119.47',
+                'montoTotal'      => '22119.47',
+                'descuento'       => '0.00',
+                'numeroLinea'     => 1,
+                'unidadMedida'    => 'Os',
+                'impuestoNeto'    => 2875.53,
+                'montoTotalLinea' => 24995.0,
+                'impuesto'        => [
+                    [
+                        'codigo'      => '01',
+                        'codigoTarifa'=> '08',
+                        'tarifa'      => '13',
+                        'monto'       => '2875.53',
+                    ],
+                ],
+            ],
+        ],
+    ]),
+]);
+
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+$result = json_decode($response, true);
+```
+
+```javascript Node.js
+const response = await fetch('https://{empresa}.mipos.co.cr/api/enviar/items', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    emisor: '3102955154',
+    numeroReferencia: 10,
+    codigoActividad: '6201.0',
+    tipoDoc: '1',
+    receptor: {
+      nombre: 'JUAN PEREZ GARCIA',
+      telefono: '50688881234',
+      identificacion: { tipo: '01', numero: '504300485' },
+      correoElectronico: 'cliente@ejemplo.com',
+    },
+    folioType: 'INVOICE',
+    fechaEmision: new Date().toISOString(),
+    resumenFactura: {
+      codigoTipoMoneda: { codigoMoneda: 'CRC' },
+    },
+    detalleServicio: [
+      {
+        codigo: '8421000000000',
+        detalle: 'INTERNET RESIDENCIAL 200 MBPS',
+        cantidad: 1.0,
+        precioUnitario: '22119.47',
+        subTotal: '22119.47',
+        montoTotal: '22119.47',
+        descuento: '0.00',
+        numeroLinea: 1,
+        unidadMedida: 'Os',
+        impuestoNeto: 2875.53,
+        montoTotalLinea: 24995.0,
+        impuesto: [
+          { codigo: '01', codigoTarifa: '08', tarifa: '13', monto: '2875.53' },
+        ],
+      },
+    ],
+  }),
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+from datetime import datetime
+
+response = requests.post(
+    'https://{empresa}.mipos.co.cr/api/enviar/items',
+    headers={'Authorization': f'Bearer {token}'},
+    json={
+        'emisor': '3102955154',
+        'numeroReferencia': 10,
+        'codigoActividad': '6201.0',
+        'tipoDoc': '1',
+        'receptor': {
+            'nombre': 'JUAN PEREZ GARCIA',
+            'telefono': '50688881234',
+            'identificacion': {'tipo': '01', 'numero': '504300485'},
+            'correoElectronico': 'cliente@ejemplo.com',
+        },
+        'folioType': 'INVOICE',
+        'fechaEmision': datetime.now().isoformat(),
+        'resumenFactura': {
+            'codigoTipoMoneda': {'codigoMoneda': 'CRC'},
+        },
+        'detalleServicio': [
+            {
+                'codigo': '8421000000000',
+                'detalle': 'INTERNET RESIDENCIAL 200 MBPS',
+                'cantidad': 1.0,
+                'precioUnitario': '22119.47',
+                'subTotal': '22119.47',
+                'montoTotal': '22119.47',
+                'descuento': '0.00',
+                'numeroLinea': 1,
+                'unidadMedida': 'Os',
+                'impuestoNeto': 2875.53,
+                'montoTotalLinea': 24995.0,
+                'impuesto': [
+                    {'codigo': '01', 'codigoTarifa': '08', 'tarifa': '13', 'monto': '2875.53'},
+                ],
+            },
+        ],
+    },
+)
+
+data = response.json()
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 — Documento enviado
+{
+  "status": "success",
+  "message": "Documento enviado correctamente",
+  "clave": "50628032600310295515400100001010000000010146404019"
+}
+```
+
+```json 400 — Error de validación
+{
+  "error": "bad_request",
+  "message": "Campos requeridos faltantes"
+}
+```
+
+```json 401 — No autorizado
+{
+  "error": "unauthorized",
+  "message": "Token inválido o expirado"
+}
+```
+</ResponseExample>
