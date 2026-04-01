@@ -18,7 +18,7 @@
   "topbarLinks": [
     {
       "name": "Estado del servicio",
-      "url": "https://factura.jarscr.com"
+      "url": "https://auth.mipos.co.cr/health"
     }
   ],
   "topbarCtaButton": {
@@ -43,7 +43,7 @@
     {
       "name": "Estado",
       "icon": "signal",
-      "url": "https://factura.jarscr.com"
+      "url": "https://auth.mipos.co.cr/health"
     }
   ],
   "navigation": [
