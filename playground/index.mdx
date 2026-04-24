@@ -28,7 +28,10 @@ curl -X POST https://auth.mipos.co.cr/login \
 ```
 
 <Tip>
-  **Mintlify Playground integrado:** Si estás viendo esta documentación en Mintlify, usa el panel lateral derecho de las páginas [POST /login](/api-reference/login) y [GET /jwks](/api-reference/jwks) para ejecutar requests directamente. Solo llena los campos y presiona **Send**.
+  **Mintlify Playground integrado:** Si estás viendo esta documentación en
+  Mintlify, usa el panel lateral derecho de las páginas [POST
+  /login](/api-reference/login) y [GET /jwks](/api-reference/jwks) para ejecutar
+  requests directamente. Solo llena los campos y presiona **Send**.
 </Tip>
 
 ---
@@ -68,6 +71,7 @@ Una vez que tengas un token, puedes inspeccionar su contenido (sin verificar la 
     const decoded = decodificarJWT('eyJhbGciOi...');
     console.table(decoded);
     ```
+
   </Tab>
 
   <Tab title="PHP">
@@ -79,6 +83,7 @@ Una vez que tengas un token, puedes inspeccionar su contenido (sin verificar la 
 
     print_r(decodificarJWT('eyJhbGciOi...'));
     ```
+
   </Tab>
 
   <Tab title="Python">
@@ -92,6 +97,7 @@ Una vez que tengas un token, puedes inspeccionar su contenido (sin verificar la 
 
     print(decodificar_jwt('eyJhbGciOi...'))
     ```
+
   </Tab>
 </Tabs>
 
@@ -109,14 +115,14 @@ Una vez que tengas un token, puedes inspeccionar su contenido (sin verificar la 
 }
 ```
 
-| Campo | Qué contiene |
-|-------|-------------|
-| `iss` | URL del Auth Server que emitió el token |
-| `aud` | Audiencia del token |
-| `iat` | Cuándo se emitió (Unix timestamp) |
-| `exp` | Cuándo expira (Unix timestamp) |
-| `jti` | ID único del token — útil para revocación |
-| `sub` | Identificador del cliente |
+| Campo  | Qué contiene                                  |
+| ------ | --------------------------------------------- |
+| `iss`  | URL del Auth Server que emitió el token       |
+| `aud`  | Audiencia del token                           |
+| `iat`  | Cuándo se emitió (Unix timestamp)             |
+| `exp`  | Cuándo expira (Unix timestamp)                |
+| `jti`  | ID único del token — útil para revocación     |
+| `sub`  | Identificador del cliente                     |
 | `base` | Nombre del cliente en la BD (mismo que `sub`) |
 
 ---
@@ -139,5 +145,7 @@ Una vez que tengas un token, puedes inspeccionar su contenido (sin verificar la 
 </Steps>
 
 <Warning>
-  **No decodifiques tokens en herramientas online de terceros en producción.** Aunque el payload no es secreto, evita exponer tokens activos en sitios como jwt.io. Usa los métodos locales de arriba.
+  **No decodifiques tokens en herramientas online de terceros en producción.**
+  Aunque el payload no es secreto, evita exponer tokens activos en sitios como
+  jwt.io. Usa los métodos locales de arriba.
 </Warning>

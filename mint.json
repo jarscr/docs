@@ -33,6 +33,10 @@
     {
       "name": "API Cliente",
       "url": "api-reference/cliente"
+    },
+    {
+      "name": "Playground",
+      "url": "playground"
     }
   ],
   "anchors": [
@@ -67,7 +71,12 @@
         "api-reference/errors"
       ]
     },
-  
+    {
+      "group": "Playground",
+      "pages": [
+        "playground/index"
+      ]
+    },
     {
       "group": "Visión general",
       "pages": [
