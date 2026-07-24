@@ -6,7 +6,9 @@ description: "Emitir un tiquete electrónico para receptor con identificación e
 Envía un tiquete electrónico (tipoDoc `"4"`) para un receptor con identificación extranjera (tipo `"05"`).
 
 <Note>
-  La diferencia con el tiquete regular es que este incluye un receptor con tipo de identificación `"05"` (extranjero), que acepta números de pasaporte u otros documentos internacionales.
+  La diferencia con el tiquete regular es que este incluye un receptor con tipo
+  de identificación `"05"` (extranjero), que acepta números de pasaporte u otros
+  documentos internacionales.
 </Note>
 
 ## Request
@@ -70,15 +72,19 @@ POST https://{empresa}.mipos.co.cr/api/enviar/items
 </ParamField>
 
 <ParamField body="detalleServicio" type="array" required>
-  Líneas de detalle del documento. Ver [Factura Electrónica](/api-reference/cliente/enviar-factura) para la estructura completa.
+  Líneas de detalle del documento. Ver [Factura
+  Electrónica](/api-reference/cliente/enviar-factura) para la estructura
+  completa.
 </ParamField>
 
 <ParamField body="otrosCargos" type="array">
-  Cargos adicionales. Ver [Factura Electrónica](/api-reference/cliente/enviar-factura) para la estructura.
+  Cargos adicionales. Ver [Factura
+  Electrónica](/api-reference/cliente/enviar-factura) para la estructura.
 </ParamField>
 
 <ParamField body="resumenFactura" type="object" required>
-  Resumen con moneda y totales. Ver [Factura Electrónica](/api-reference/cliente/enviar-factura) para la estructura.
+  Resumen con moneda y totales. Ver [Factura
+  Electrónica](/api-reference/cliente/enviar-factura) para la estructura.
 </ParamField>
 
 <RequestExample>
@@ -106,6 +112,16 @@ curl -X POST https://{empresa}.mipos.co.cr/api/enviar/items \
       "codigoTipoMoneda": {
         "codigoMoneda": "CRC"
       },
+      "mediosPago": [
+        {
+          "tipoMedioPago":"01",
+          "totalMedioPago":"20000.00"
+        },
+        {
+          "tipoMedioPago":"06",
+          "totalMedioPago":"5160.90"
+        }
+      ],
       "totalOtrosCargos": "387.09"
     },
     "otrosCargos": [
@@ -207,44 +223,44 @@ curl_close($ch);
 ```
 
 ```javascript Node.js
-const response = await fetch('https://{empresa}.mipos.co.cr/api/enviar/items', {
-  method: 'POST',
+const response = await fetch("https://{empresa}.mipos.co.cr/api/enviar/items", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
   },
   body: JSON.stringify({
-    emisor: '3102955154',
+    emisor: "3102955154",
     numeroReferencia: 20,
-    codigoActividad: '6201.0',
-    tipoDoc: '4',
+    codigoActividad: "6201.0",
+    tipoDoc: "4",
     receptor: {
-      nombre: 'JOHN DOE SMITH',
-      telefono: '50684444',
-      identificacion: { tipo: '05', numero: 'BC9872774' },
-      correoElectronico: 'john@example.com',
+      nombre: "JOHN DOE SMITH",
+      telefono: "50684444",
+      identificacion: { tipo: "05", numero: "BC9872774" },
+      correoElectronico: "john@example.com",
     },
-    folioType: 'INVOICE',
+    folioType: "INVOICE",
     fechaEmision: new Date().toISOString(),
     resumenFactura: {
-      codigoTipoMoneda: { codigoMoneda: 'CRC' },
-      totalOtrosCargos: '387.09',
+      codigoTipoMoneda: { codigoMoneda: "CRC" },
+      totalOtrosCargos: "387.09",
     },
     detalleServicio: [
       {
-        codigo: '8421000000000',
-        detalle: 'INTERNET RESIDENCIAL 200 MBPS',
+        codigo: "8421000000000",
+        detalle: "INTERNET RESIDENCIAL 200 MBPS",
         cantidad: 1.0,
-        precioUnitario: '22119.47',
-        subTotal: '22119.47',
-        montoTotal: '22119.47',
-        descuento: '0.00',
+        precioUnitario: "22119.47",
+        subTotal: "22119.47",
+        montoTotal: "22119.47",
+        descuento: "0.00",
         numeroLinea: 1,
-        unidadMedida: 'Os',
+        unidadMedida: "Os",
         impuestoNeto: 2875.53,
         montoTotalLinea: 24995.0,
         impuesto: [
-          { codigo: '01', codigoTarifa: '08', tarifa: '13', monto: '2875.53' },
+          { codigo: "01", codigoTarifa: "08", tarifa: "13", monto: "2875.53" },
         ],
       },
     ],
@@ -301,6 +317,7 @@ response = requests.post(
 
 data = response.json()
 ```
+
 </RequestExample>
 
 <ResponseExample>
@@ -318,4 +335,5 @@ data = response.json()
   "message": "Token inválido o expirado"
 }
 ```
+
 </ResponseExample>
